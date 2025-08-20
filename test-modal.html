@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Functionality</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        
+        /* Modal Styles */
+        .procurement-modal,
+        .tender-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .procurement-modal.show,
+        .tender-modal.show {
+            opacity: 1;
+            visibility: visible;
+            display: flex;
+        }
+        
+        .modal-content,
+        .tender-modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .procurement-modal.show .modal-content,
+        .tender-modal.show .tender-modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-close,
+        .tender-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            z-index: 1;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover,
+        .tender-modal-close:hover {
+            color: #000;
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Modal Functionality</h1>
+    
+    <div class="test-section">
+        <h2>Test Modals</h2>
+        <button onclick="openTestModal('tender-details-modal')">Open Tender Details Modal</button>
+        <button onclick="openTestModal('bid-submission-modal')">Open Bid Submission Modal</button>
+        <button onclick="openTestModal('bid-modal')">Open Bid Modal</button>
+    </div>
+
+    <!-- Tender Details Modal -->
+    <div id="tender-details-modal" class="tender-modal">
+        <div class="tender-modal-content">
+            <span class="tender-modal-close">&times;</span>
+            <div id="tender-details-content">
+                <h3>Test Tender Details</h3>
+                <p>This is a test tender details modal. It should be visible when opened.</p>
+                <p>You can close it by:</p>
+                <ul>
+                    <li>Clicking the X button</li>
+                    <li>Clicking outside the modal</li>
+                    <li>Pressing the Escape key</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bid Submission Modal -->
+    <div id="bid-submission-modal" class="tender-modal">
+        <div class="tender-modal-content">
+            <span class="tender-modal-close">&times;</span>
+            <div id="bid-form-content">
+                <h3>Test Bid Submission</h3>
+                <p>This is a test bid submission modal. It should be visible when opened.</p>
+                <p>You can close it by:</p>
+                <ul>
+                    <li>Clicking the X button</li>
+                    <li>Clicking outside the modal</li>
+                    <li>Pressing the Escape key</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bid Modal -->
+    <div id="bid-modal" class="procurement-modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <div id="bid-form-container">
+                <h3>Test Bid Modal</h3>
+                <p>This is a test bid modal. It should be visible when opened.</p>
+                <p>You can close it by:</p>
+                <ul>
+                    <li>Clicking the X button</li>
+                    <li>Clicking outside the modal</li>
+                    <li>Pressing the Escape key</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTestModal(modalId) {
+            const $modal = $('#' + modalId);
+            $modal.addClass('show').show();
+            $('body').addClass('modal-open');
+            console.log('Opened modal:', modalId);
+        }
+
+        function closeModal($modal) {
+            $modal.removeClass('show').hide();
+            $('body').removeClass('modal-open');
+            console.log('Closed modal');
+        }
+
+        // Close modal when clicking outside
+        $(document).on('click', '.procurement-modal, .tender-modal', function(e) {
+            if (e.target === this) {
+                closeModal($(this));
+            }
+        });
+
+        // Close modal when clicking close button
+        $(document).on('click', '.modal-close, .tender-modal-close', function(e) {
+            e.preventDefault();
+            const $modal = $(this).closest('.procurement-modal, .tender-modal');
+            closeModal($modal);
+        });
+
+        // Close modal with Escape key
+        $(document).on('keydown', function(e) {
+            if (e.key === 'Escape') {
+                $('.procurement-modal.show, .tender-modal.show').each(function() {
+                    closeModal($(this));
+                });
+            }
+        });
+
+        // Test on page load
+        $(document).ready(function() {
+            console.log('Modal test page loaded');
+            console.log('Available modals:', $('.procurement-modal, .tender-modal').length);
+        });
+    </script>
+</body>
+</html>

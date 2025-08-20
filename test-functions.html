@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AJAX Functions</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+        }
+        .success {
+            background: #e6ffe6;
+            color: #00b894;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test AJAX Functions</h1>
+    
+    <div class="test-section">
+        <h2>Check procurement_ajax Availability</h2>
+        <button onclick="checkAjaxAvailability()">Check Availability</button>
+        <div id="availability-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test AJAX Requests</h2>
+        <button onclick="testGetBidForm()">Test get_bid_form</button>
+        <button onclick="testGetTenderDetails()">Test get_tender_details</button>
+        <button onclick="testSubmitBid()">Test submit_bid</button>
+        <div id="ajax-results" class="result"></div>
+    </div>
+
+    <script>
+        // Simulate procurement_ajax for testing
+        window.procurement_ajax = {
+            ajax_url: 'https://localhost/wordpress/wp-admin/admin-ajax.php',
+            nonce: 'test_nonce_123'
+        };
+        
+        function checkAjaxAvailability() {
+            const result = document.getElementById('availability-result');
+            result.innerHTML = '';
+            
+            if (typeof window.procurement_ajax !== 'undefined') {
+                result.innerHTML = 'SUCCESS: procurement_ajax is available\n';
+                result.innerHTML += 'ajax_url: ' + window.procurement_ajax.ajax_url + '\n';
+                result.innerHTML += 'nonce: ' + window.procurement_ajax.nonce + '\n';
+                result.className = 'result success';
+            } else {
+                result.innerHTML = 'ERROR: procurement_ajax is not available\n';
+                result.className = 'result error';
+            }
+        }
+        
+        function testGetBidForm() {
+            const results = document.getElementById('ajax-results');
+            results.innerHTML = 'Testing get_bid_form...\n';
+            
+            if (!window.procurement_ajax || !window.procurement_ajax.ajax_url) {
+                results.innerHTML += 'ERROR: procurement_ajax not available\n';
+                results.className = 'result error';
+                return;
+            }
+            
+            $.ajax({
+                url: window.procurement_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'get_bid_form',
+                    tender_id: 1,
+                    nonce: window.procurement_ajax.nonce
+                },
+                success: function(response) {
+                    results.innerHTML += 'SUCCESS: AJAX request completed\n';
+                    results.innerHTML += 'Response: ' + JSON.stringify(response, null, 2) + '\n';
+                    results.className = 'result success';
+                },
+                error: function(xhr, status, error) {
+                    results.innerHTML += 'ERROR: AJAX request failed\n';
+                    results.innerHTML += 'Status: ' + status + '\n';
+                    results.innerHTML += 'Error: ' + error + '\n';
+                    results.innerHTML += 'Response: ' + xhr.responseText + '\n';
+                    results.className = 'result error';
+                }
+            });
+        }
+        
+        function testGetTenderDetails() {
+            const results = document.getElementById('ajax-results');
+            results.innerHTML = 'Testing get_tender_details...\n';
+            
+            if (!window.procurement_ajax || !window.procurement_ajax.ajax_url) {
+                results.innerHTML += 'ERROR: procurement_ajax not available\n';
+                results.className = 'result error';
+                return;
+            }
+            
+            $.ajax({
+                url: window.procurement_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'get_tender_details',
+                    tender_id: 1,
+                    nonce: window.procurement_ajax.nonce
+                },
+                success: function(response) {
+                    results.innerHTML += 'SUCCESS: AJAX request completed\n';
+                    results.innerHTML += 'Response: ' + JSON.stringify(response, null, 2) + '\n';
+                    results.className = 'result success';
+                },
+                error: function(xhr, status, error) {
+                    results.innerHTML += 'ERROR: AJAX request failed\n';
+                    results.innerHTML += 'Status: ' + status + '\n';
+                    results.innerHTML += 'Error: ' + error + '\n';
+                    results.innerHTML += 'Response: ' + xhr.responseText + '\n';
+                    results.className = 'result error';
+                }
+            });
+        }
+        
+        function testSubmitBid() {
+            const results = document.getElementById('ajax-results');
+            results.innerHTML = 'Testing submit_bid...\n';
+            
+            if (!window.procurement_ajax || !window.procurement_ajax.ajax_url) {
+                results.innerHTML += 'ERROR: procurement_ajax not available\n';
+                results.className = 'result error';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('action', 'submit_bid');
+            formData.append('bid_nonce', window.procurement_ajax.nonce);
+            formData.append('tender_id', '1');
+            formData.append('bid_amount', '1000');
+            formData.append('technical_proposal', 'Test proposal');
+            formData.append('financial_proposal', 'Test financial');
+            
+            $.ajax({
+                url: window.procurement_ajax.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    results.innerHTML += 'SUCCESS: Form submitted\n';
+                    results.innerHTML += 'Response: ' + JSON.stringify(response, null, 2) + '\n';
+                    results.className = 'result success';
+                },
+                error: function(xhr, status, error) {
+                    results.innerHTML += 'ERROR: Form submission failed\n';
+                    results.innerHTML += 'Status: ' + status + '\n';
+                    results.innerHTML += 'Error: ' + error + '\n';
+                    results.innerHTML += 'Response: ' + xhr.responseText + '\n';
+                    results.className = 'result error';
+                }
+            });
+        }
+        
+        // Auto-check on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                checkAjaxAvailability();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

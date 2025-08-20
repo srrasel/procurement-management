@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procurement AJAX Test</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+        }
+        .success {
+            background: #e6ffe6;
+            color: #00b894;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Procurement AJAX Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Check if procurement_ajax is available</h2>
+        <button onclick="testAjaxAvailability()">Test AJAX Availability</button>
+        <div id="ajax-availability-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Test Nonce Generation</h2>
+        <button onclick="testNonce()">Test Nonce</button>
+        <div id="nonce-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Test AJAX Request</h2>
+        <button onclick="testAjaxRequest()">Test AJAX Request</button>
+        <div id="ajax-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Test Form Submission</h2>
+        <form id="test-form">
+            <input type="hidden" name="action" value="submit_bid">
+            <input type="hidden" name="bid_nonce" id="form-nonce">
+            <input type="hidden" name="tender_id" value="1">
+            <input type="number" name="bid_amount" value="1000" placeholder="Bid Amount">
+            <textarea name="technical_proposal" placeholder="Technical Proposal">Test proposal</textarea>
+            <textarea name="financial_proposal" placeholder="Financial Proposal">Test financial</textarea>
+            <button type="submit">Submit Test Bid</button>
+        </form>
+        <div id="form-result" class="result"></div>
+    </div>
+
+    <script>
+        function testAjaxAvailability() {
+            const result = document.getElementById('ajax-availability-result');
+            result.innerHTML = '';
+            
+            if (typeof procurement_ajax !== 'undefined') {
+                result.innerHTML = 'SUCCESS: procurement_ajax is available\n';
+                result.innerHTML += 'ajax_url: ' + procurement_ajax.ajax_url + '\n';
+                result.innerHTML += 'nonce: ' + procurement_ajax.nonce + '\n';
+                result.className = 'result success';
+            } else {
+                result.innerHTML = 'ERROR: procurement_ajax is not available\n';
+                result.innerHTML += 'Make sure the WordPress plugin is active and the script is properly enqueued.\n';
+                result.className = 'result error';
+            }
+        }
+        
+        function testNonce() {
+            const result = document.getElementById('nonce-result');
+            result.innerHTML = '';
+            
+            if (typeof procurement_ajax !== 'undefined' && procurement_ajax.nonce) {
+                result.innerHTML = 'SUCCESS: Nonce is available\n';
+                result.innerHTML += 'Nonce: ' + procurement_ajax.nonce + '\n';
+                result.className = 'result success';
+                
+                // Update form nonce
+                document.getElementById('form-nonce').value = procurement_ajax.nonce;
+            } else {
+                result.innerHTML = 'ERROR: Nonce is not available\n';
+                result.className = 'result error';
+            }
+        }
+        
+        function testAjaxRequest() {
+            const result = document.getElementById('ajax-result');
+            result.innerHTML = 'Testing AJAX request...\n';
+            
+            if (typeof procurement_ajax === 'undefined') {
+                result.innerHTML += 'ERROR: procurement_ajax not available\n';
+                result.className = 'result error';
+                return;
+            }
+            
+            $.ajax({
+                url: procurement_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'get_tender_details',
+                    tender_id: 1,
+                    nonce: procurement_ajax.nonce
+                },
+                success: function(response) {
+                    result.innerHTML += 'SUCCESS: AJAX request completed\n';
+                    result.innerHTML += 'Response: ' + JSON.stringify(response, null, 2) + '\n';
+                    result.className = 'result success';
+                },
+                error: function(xhr, status, error) {
+                    result.innerHTML += 'ERROR: AJAX request failed\n';
+                    result.innerHTML += 'Status: ' + status + '\n';
+                    result.innerHTML += 'Error: ' + error + '\n';
+                    result.innerHTML += 'Response: ' + xhr.responseText + '\n';
+                    result.className = 'result error';
+                }
+            });
+        }
+        
+        // Test form submission
+        document.getElementById('test-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const result = document.getElementById('form-result');
+            result.innerHTML = 'Submitting test form...\n';
+            
+            const formData = new FormData(this);
+            
+            $.ajax({
+                url: procurement_ajax.ajax_url,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    result.innerHTML += 'SUCCESS: Form submitted\n';
+                    result.innerHTML += 'Response: ' + JSON.stringify(response, null, 2) + '\n';
+                    result.className = 'result success';
+                },
+                error: function(xhr, status, error) {
+                    result.innerHTML += 'ERROR: Form submission failed\n';
+                    result.innerHTML += 'Status: ' + status + '\n';
+                    result.innerHTML += 'Error: ' + error + '\n';
+                    result.innerHTML += 'Response: ' + xhr.responseText + '\n';
+                    result.className = 'result error';
+                }
+            });
+        });
+        
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                testAjaxAvailability();
+                testNonce();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
